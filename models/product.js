@@ -13,8 +13,10 @@ class Product{
     const db = getDb();
     let mycol;
     if(this._id){
-      mycol = db.collection('products').updateOne({_id: this._id},{$set: this})
+      console.log("11111111111111111111",this._id)
+      mycol = db.collection('products').updateOne({_id: new ObjectId(this._id)},{$set: this})
     }else{
+      console.log("2222222222222222222")
       mycol = db.collection('products').insertOne(this)
     }
     return mycol
@@ -50,6 +52,17 @@ class Product{
         return result;
       })
       .catch(err => console.log(err))
+  }
+
+  static deleteById(prodId){
+    const db = getDb();
+    db.collection('products')
+      .deleteOne({_id:new ObjectId(prodId)})
+      .then((result) => {
+        console.log("Product Deleted");
+        return result;
+      })
+      .catch((err) => console.log(err))
   }
 }
 
