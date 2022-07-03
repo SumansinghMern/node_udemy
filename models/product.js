@@ -2,21 +2,20 @@ const { ObjectId } = require('mongodb');
 const { getDb } = require('../util/database')
 
 class Product{
-  constructor(title,price,imageUrl,description,id){
+  constructor(title,price,imageUrl,description,id,userId){
     this.title = title;
     this.price = price;
     this.imageUrl = imageUrl;
     this.description = description;
-    this._id = id
+    this._id = id ? new ObjectId(id) : null
+    this.userId = new ObjectId(userId)
   }
   save() {
     const db = getDb();
     let mycol;
     if(this._id){
-      console.log("11111111111111111111",this._id)
-      mycol = db.collection('products').updateOne({_id: new ObjectId(this._id)},{$set: this})
+      mycol = db.collection('products').updateOne({_id: this._id},{$set: this})
     }else{
-      console.log("2222222222222222222")
       mycol = db.collection('products').insertOne(this)
     }
     return mycol
@@ -55,14 +54,20 @@ class Product{
   }
 
   static deleteById(prodId){
-    const db = getDb();
-    db.collection('products')
-      .deleteOne({_id:new ObjectId(prodId)})
-      .then((result) => {
-        console.log("Product Deleted");
-        return result;
-      })
-      .catch((err) => console.log(err))
+    return new Promise((resolve, reject) => {
+      const db = getDb();
+      db.collection('products')
+        .deleteOne({ _id: new ObjectId(prodId) })
+        .then((result) => {
+          console.log(result, "Product Deleted");
+          resolve(result)
+        })
+        .catch((err) => {
+          console.log(err)
+          reject(err)
+        })
+    })
+    
   }
 }
 
