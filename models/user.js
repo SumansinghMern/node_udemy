@@ -23,12 +23,14 @@ class User {
   }
 
   addToCart(product){
-    const cartProductIndex = this.cart.items.findIndex(cp => {
+    const cartProductIndex = this.cart && this.cart.items && this.cart.items.length ? this.cart.items.findIndex(cp => {
       return cp.productId.toString() === product._id.toString()
-    })
+    }) : -1
 
     let newQuantity = 1;
-    let updatedCartItems = [...this.cart.items]
+    let updatedCartItems = this.cart && this.cart.items && this.cart.items.length && [...this.cart.items] || []
+
+    console.log(cartProductIndex, " DDDDDDDDDDDDDDDDd", this.cart.items, product)
 
     if (cartProductIndex >= 0){
       newQuantity = this.cart.items[cartProductIndex].quantity + 1;
@@ -46,7 +48,7 @@ class User {
     )
   }
 
-  getCart(){
+  getCartData(){
     const db = getDb();
     const productIds = this.cart.items.map(i => {
       return i.productId
@@ -62,6 +64,52 @@ class User {
                       }
                     })
                   })
+  }
+
+  deleteCartItem(prodId){
+    const db = getDb();
+    let updatedCart = this.cart.items.filter(i => {
+      return i.productId.toString() !== prodId.toString()
+    })
+
+    return db.collection('users').updateOne(
+      { _id: this._id },
+      { $set: { cart: {items: updatedCart} } }
+    )
+  }
+
+  addOrder() {
+    return new Promise((resolve, reject) => {
+      const db = getDb();
+      this.getCartData().then(products => {
+        const order = {
+          items : products,
+          user: {
+            _id: new ObjectId(this._id),
+            name: this.name,
+            email: this.email
+          }
+        }
+        return db.collection('orders').insertOne(order)
+      })
+        .then((result) => {
+          console.log(result, " Order Added..");
+          db.collection('users').updateOne(
+            { _id: new ObjectId(this._id) },
+            { $set: { cart: { items: [] } } }
+          ).then((resive) => {
+            resolve(resive)
+          })
+          .catch((err) => reject(err))
+        })
+        .catch((err) => console.log(err))
+    })
+    
+  }
+
+  getOrders() {
+    const db = getDb();
+    return db.collection('orders').find({"user._id": this._id}).toArray()
   }
 
   static findUserById(userId){
