@@ -5,7 +5,8 @@ exports.getAddProduct = (req, res, next) => {
   res.render('admin/edit-product', {
     pageTitle: 'Add Product',
     path: '/admin/add-product',
-    editing: false
+    editing: false,
+    isAuthenticated: req.session.isLogedIn
   });
 };
 
@@ -38,7 +39,8 @@ exports.getEditProduct = (req, res, next) => {
         pageTitle: 'Edit Product',
         path: '/admin/edit-product',
         editing: editMode,
-        product: product
+        product: product,
+        isAuthenticated: req.session.isLogedIn
       });
     })
     .catch(err => console.log(err))
@@ -69,14 +71,15 @@ exports.postEditProduct = (req, res, next) => {
 
 exports.getProducts = (req, res, next) => {
   Product.find({})
-    .select('name price imageUrl -_id')
+    // .select('name price imageUrl -_id')
     .populate('userId','name -_id')
     .then((products) => {
       console.log(products," PPPPPPPPPPPP")
       res.render('admin/products', {
         prods: products,
         pageTitle: 'Admin Products',
-        path: '/admin/products'
+        path: '/admin/products',
+        isAuthenticated: req.session.isLogedIn
       });
     })
     .catch(err => console.log(err))
@@ -84,7 +87,9 @@ exports.getProducts = (req, res, next) => {
 
 exports.postDeleteProduct = async (req, res, next) => {
   const prodId = req.body.productId;
-  let result = await Product.findByIdAndRemove(prodId)
+  console.log(prodId, " RRRRRRRRRr")
+
+  let result = await Product.findByIdAndRemove(prodId,)
   if(result){
     res.redirect('/admin/products');
   }

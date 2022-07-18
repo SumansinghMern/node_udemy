@@ -52,6 +52,11 @@ userSchema.methods.deleteCartItem = function (prodId){
 
 }
 
+userSchema.methods.clearCart = function (){
+  this.cart = {items: []};
+  return this.save();
+}
+
 // userSchema.methods.getCartData = function(){
 //     // const db = getDb();
 //     const productIds = this.cart.items.map(i => {
