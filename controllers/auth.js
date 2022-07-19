@@ -1,22 +1,44 @@
 var bcrypt = require('bcryptjs');
 
-const User = require('../models/user')
+const nodemailer = require('nodemailer');
+
+const User = require('../models/user');
+
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: 'sumansinghfire7870@gmail.com',
+        pass: 'upqxivrpbufvysur'
+    }
+});
 
 
 exports.getLogin = (req, res, next) => {
+    let message = req.flash('error');
+    if(message && message.length){
+        message = message[0]
+    }else{
+        message = null 
+    }
     res.render('auth/login', {
         pageTitle: 'Login',
         path: '/login',
         editing: false,
-        isAuthenticated: req.session.isLogedIn
+        errorMessage: message
     });
 };
 
 exports.getSignup = (req, res, next) => {
+    let message = req.flash('error');
+    if (message && message.length) {
+        message = message[0]
+    } else {
+        message = null
+    }
     res.render('auth/signup', {
         path: '/signup',
         pageTitle: 'Signup',
-        isAuthenticated: false
+        errorMessage: message
     });
 };
 
@@ -25,6 +47,7 @@ exports.postLogin = (req, res, next) => {
     User.findOne({email})
         .then((user) => {
             if(!user){
+                req.flash('error','Invalid Email or Password!!')
                 return res.redirect('/login')
             }
             bcrypt.compare(password,user.password)
@@ -37,6 +60,7 @@ exports.postLogin = (req, res, next) => {
                         res.redirect('/');
                     })
                 }
+                req.flash('error', 'Invalid Password!!')
                 res.redirect('/login')
             })
             .catch((err) => {
@@ -57,6 +81,7 @@ exports.postSignup = (req, res, next) => {
         User.findOne({ email })
             .then((userDoc) => {
                 if (userDoc) {
+                    req.flash('error', 'Email All-ready Exist!!')
                     return res.redirect('/signup')
                 }
 
@@ -70,7 +95,22 @@ exports.postSignup = (req, res, next) => {
                         return user.save();
                     })
                     .then((result) => {
-                        res.redirect('/')
+                        res.redirect('/');
+
+                        const mailOptions = {
+                            from: 'sumansinghfire7870@gmail.com',
+                            to: email,
+                            subject: 'My first Email!!!',
+                            html: "<h1>You SignUp Successfully!!"
+                        };
+
+                        transporter.sendMail(mailOptions, (err,info) => {
+                            if(err){
+                                console.log(err,"Email Error!!!")
+                            }
+                            console.log(info, "Email Info !!!")
+                        })
+
                     }).catch((err) => {
                         console.log(err);
                     });
