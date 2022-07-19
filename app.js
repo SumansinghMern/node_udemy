@@ -5,6 +5,7 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const session = require('express-session');
 const MongoDbStore = require('connect-mongodb-session')(session);
+const csrf = require('csurf');
 
 const errorController = require('./controllers/error');
 const User = require("./models/user")
@@ -29,6 +30,8 @@ const shopRoutes = require('./routes/shop');
 const authRoutes = require('./routes/auth')
 const { log } = require('console');
 
+const csrfProtection = csrf();
+
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(session({
@@ -40,18 +43,29 @@ app.use(session({
   },
   store: store,
 }))
+app.use(csrfProtection)
 
 app.use((req, res, next) => {
-  console.log(req.session.userId," XXXXXXXXXXXXXXXX")
-  User.findById(req.session.userId)
-    .populate('cart.items.productId')
-    .then(user => {
-      req.user = user;
-      // console.log("USER --->", user)
-      next();
-    })
-    .catch(err => console.log(err));
+  if (!req.session.userId){
+    next();
+  }else{
+    User.findById(req.session.userId)
+      .populate('cart.items.productId')
+      .then(user => {
+        req.user = user;
+        // console.log("USER --->", user)
+        next();
+      })
+      .catch(err => console.log(err));
+  }
+  
 });
+
+app.use((req,res,next) => {
+  res.locals.isAuthenticated = req.session.isLogedIn;
+  res.locals.csrfToken = req.csrfToken();
+  next();
+})
 
 app.use('/admin', adminRoutes);
 app.use(shopRoutes);
@@ -73,19 +87,19 @@ app.use(errorController.get404);
 mongoose.connect(MONGODB_URI)
   .then((result) => {
     app.listen(3000, () => {
-      User.findOne().then(user => {
-        if (!user) {
-          let user = new User({
-            name: "Sonu Singh",
-            email: "example@gmail.com",
-            cart: {
-              items: []
-            }
-          })
-          user.save()
+      // User.findOne().then(user => {
+      //   if (!user) {
+      //     let user = new User({
+      //       name: "Sonu Singh",
+      //       email: "example@gmail.com",
+      //       cart: {
+      //         items: []
+      //       }
+      //     })
+      //     user.save()
 
-        }
-      })
+      //   }
+      // })
       console.log("App is listning On 3000")
     })
   })

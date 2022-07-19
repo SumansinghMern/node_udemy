@@ -3,13 +3,17 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const userSchema = new Schema({
-    name:{
-        type: String,
-        required: true
-    },
+    // name:{
+    //     type: String,
+    //     required: true
+    // },
     email: {
         type: String,
         required: true
+    },
+    password: {
+      type: String,
+      required: true
     },
     cart: {
         items: [{
@@ -21,7 +25,7 @@ const userSchema = new Schema({
 
 userSchema.methods.addToCart = function(product){
     const cartProductIndex = this.cart.items.findIndex(cp => {
-      return cp.productId.toString() === product._id.toString()
+      return cp.productId._id.toString() === product._id.toString()
     });
 
     let newQuantity = 1;
@@ -43,7 +47,7 @@ userSchema.methods.addToCart = function(product){
 
 userSchema.methods.deleteCartItem = function (prodId){
     let updatedCart = this.cart.items.filter(i => {
-      return i.productId.toString() !== prodId.toString()
+      return i.productId._id.toString() !== prodId.toString()
     })
 
     this.cart = {items: updatedCart}

@@ -47,11 +47,10 @@ exports.getIndex = (req, res, next) => {
 };
 
 exports.getCart = (req, res, next) => {
-  console.log(req.user," FFFFFFFFF")
+  // console.log(req.user," FFFFFFFFF")
   req.user
     .populate('cart.items.productId')
     .then(user => {
-          console.log(user.cart.items," UUUUUUUUUU")
           const products = user.cart.items;
           res.render('shop/cart', {
             path: '/cart',
@@ -65,7 +64,6 @@ exports.getCart = (req, res, next) => {
 
 exports.postCart = (req, res, next) => {
   const prodId = req.body.productId;
-  console.log(prodId," RRRRRRRRRRRRRRRRRRRRRR")
   Product.findById(prodId)
       .then((product) => {
         return req.user.addToCart(product)
@@ -82,10 +80,10 @@ exports.postCart = (req, res, next) => {
 
 exports.postCartDeleteProduct = (req, res, next) => {
   const prodId = req.body.productId;
+  console.log(prodId," FFFFFFFFFFF")
   req.user
     .deleteCartItem(prodId)
     .then((result) => {
-      console.log(result,'XXXXXXXXXXXXXXXXXXXX')
       res.redirect('/cart');
     })
     .catch((err) => console.log(err))
