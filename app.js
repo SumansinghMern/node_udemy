@@ -47,7 +47,6 @@ app.use(session({
 app.use(csrfProtection)
 
 app.use((req, res, next) => {
-  console.log(req.session," SSSSSSSSSSSSSSSSSSSSSSSSSSSSs");
   if (!req.session.userId){
     next();
   }else{
