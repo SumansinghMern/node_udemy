@@ -161,10 +161,83 @@ exports.postReset = (req,res, next) => {
                 }
                 user.resetToken = token;
                 user.resetTokenExpiration = Date.now() + 3600000;
-                user
+                return user.save();
+            })
+            .then((result) => {
+                res.redirect('/');
+                const mailOptions = {
+                    from: 'sumansinghfire7870@gmail.com',
+                    to: email,
+                    subject: 'Reset Password!',
+                    html: `
+                      <p>You Have Requested For Password Update!!</p>
+                      <P> Click This <a href="http://localhost:3000/reset/${token}"> Link </a>For PassWord Updated</p>
+                    `
+                };
+
+                transporter.sendMail(mailOptions, (err, info) => {
+                    if (err) {
+                        console.log(err, "Email Error!!!")
+                    }
+                    console.log(info, "Email Info !!!")
+                })
             })
             .catch((err) => {
                 console.log(err)
             })
     })
+}
+
+exports.getNewPassword = (req, res, next) => {
+    const token = req.params.token;
+    User.findOne({ resetToken: token/* , resetTokenExpiration :{ $gt: Date.now() } */ } )
+            .then((user) => {
+                let message = req.flash('error');
+                if (message && message.length) {
+                    message = message[0]
+                } else {
+                    message = null
+                }
+                let view;
+                if (user.resetTokenExpiration > Date.now()){
+                    view = true
+                }else{
+                    view = false
+                }
+                console.log(user.resetTokenExpiration > Date.now(), "USER-----------", view)
+                res.render('auth/new-password', {
+                    path: '/new-password',
+                    pageTitle: 'Set Password',
+                    errorMessage: message,
+                    userId:user._id.toString(),
+                    pageView: view
+                });
+            })
+            .catch((err) => {
+                console.log(err);
+            })
+    
+}
+
+exports.postNewPassword = (req,res,next) => {
+    const { userId, password } = req.body;
+    User.findById(userId)
+        .then((user) => {
+            bcrypt.hash(password, 12)
+                .then((encryptPassword) => {
+                    user.password = encryptPassword;
+                    user.resetTokenExpiration = Date.now();
+                    return user.save();
+                })
+                .then((responce) => {
+                    res.redirect('/login')
+                })
+                .catch((err) => {
+                    console.log(err,' DDDDDDDD')
+                })
+            // console.log(user,"UUUUUUUUU",password)
+        })
+        .catch((err) => {
+            console.log(err)
+        })
 }

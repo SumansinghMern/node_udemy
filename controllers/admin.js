@@ -34,6 +34,10 @@ exports.getEditProduct = (req, res, next) => {
 
   Product.findById(prodId)
     .then(product => {
+      console.log(product.userId.toString(), " EEEEEEEE", req.user._id.toString())
+      if (product.userId.toString() !== req.user._id.toString()){
+        return res.redirect('/');
+      }
       res.render('admin/edit-product', {
         pageTitle: 'Edit Product',
         path: '/admin/edit-product',
@@ -54,21 +58,24 @@ exports.postEditProduct = (req, res, next) => {
 
   Product.findById(prodId)
     .then(product => {
+      if (product.userId.toString() !== req.user._id.toString()){
+        return res.redirect('/');
+      }
       product.title = updatedTitle;
       product.price = updatedPrice;
       product.imageUrl = updatedImageUrl;
       product.description = updatedDesc;
-      return product.save()
+      product.save().then((product) => {
+        console.log('UPDATED PRODUCT!');
+        res.redirect('/admin/products');
+      })
     })
-    .then((product) => {
-      console.log('UPDATED PRODUCT!');
-      res.redirect('/admin/products');
-    })
+    
     .catch(err => console.log(err));
 };
 
 exports.getProducts = (req, res, next) => {
-  Product.find({})
+  Product.find({ userId : req.user._id})
     // .select('name price imageUrl -_id')
     .populate('userId','name -_id')
     .then((products) => {
@@ -85,7 +92,7 @@ exports.postDeleteProduct = async (req, res, next) => {
   const prodId = req.body.productId;
   console.log(prodId, " RRRRRRRRRr")
 
-  let result = await Product.findByIdAndRemove(prodId,)
+  let result = await Product.findByIdAndRemove(prodId)
   if(result){
     res.redirect('/admin/products');
   }
