@@ -2,6 +2,7 @@ const path = require('path');
 
 const express = require('express');
 const bodyParser = require('body-parser');
+const multer = require('multer')
 const mongoose = require('mongoose');
 const session = require('express-session');
 const MongoDbStore = require('connect-mongodb-session')(session);
@@ -34,6 +35,7 @@ const { log } = require('console');
 const csrfProtection = csrf();
 
 app.use(bodyParser.urlencoded({ extended: false }));
+app.use(multer({dest:'images'}).single('image'));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(session({
   secret: 'keyboard cat',
@@ -47,33 +49,52 @@ app.use(session({
 app.use(csrfProtection)
 
 app.use((req, res, next) => {
+  res.locals.isAuthenticated = req.session.isLogedIn;
+  res.locals.csrfToken = req.csrfToken();
+  next();
+});
+
+app.use((req, res, next) => {
+  // throw new Error('sync Error')
   if (!req.session.userId){
     next();
   }else{
     User.findById(req.session.userId)
       .populate('cart.items.productId')
       .then(user => {
+        // throw new Error('dummy');
+        if(!user){
+          return next();
+        }
         req.user = user;
         // console.log("USER --->", user)
         next();
       })
-      .catch(err => console.log(err));
+      .catch(err => {
+        // console.log(err)
+        // throw new Error(err);
+        next(new Error(err))
+      });
   }
   
 });
 
-app.use((req,res,next) => {
-  res.locals.isAuthenticated = req.session.isLogedIn;
-  res.locals.csrfToken = req.csrfToken();
-  next();
-});
+
 app.use(flash());
 
 app.use('/admin', adminRoutes);
 app.use(shopRoutes);
 app.use(authRoutes);
 
+app.get('/500',errorController.get500)
+
 app.use(errorController.get404);
+
+app.use((error, req, res, next) => {
+  // res.redirect('/500');
+  res.status(500).render('500', { pageTitle: 'Error!!', path: '/500' });
+
+})
 
 // mongoConnect(() => {
 //   app.listen(3000,() => {
