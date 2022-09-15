@@ -1,4 +1,5 @@
 const path = require('path');
+const fs = require('fs');
 
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -8,12 +9,17 @@ const session = require('express-session');
 const MongoDbStore = require('connect-mongodb-session')(session);
 const csrf = require('csurf');
 const flash = require('connect-flash');
+const helmet = require('helmet');
+const compression = require('compression');
+const morgan = require('morgan')
 
 const errorController = require('./controllers/error');
 const User = require("./models/user")
-const MONGODB_URI = 'mongodb+srv://sonu:t80rQQFSpbZeUg7b@cluster0.pizod.mongodb.net/shop?retryWrites=true&w=majority'
+const MONGODB_URI = `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSOWRD}@cluster0.pizod.mongodb.net/${process.env.MONGO_DATABASE}?retryWrites=true&w=majority`
 
 const app = express();
+
+
 const store = new MongoDbStore({
   uri: MONGODB_URI,
   collection:'sessions'
@@ -31,6 +37,15 @@ const adminRoutes = require('./routes/admin');
 const shopRoutes = require('./routes/shop');
 const authRoutes = require('./routes/auth')
 const { log } = require('console');
+
+const accessLogStream = fs.createWriteStream(
+  path.join(__dirname, 'mylog.log'),
+  { flags:'a' }
+)
+
+app.use(helmet())
+app.use(compression());
+app.use(morgan('combined',{stream: accessLogStream}))
 
 const csrfProtection = csrf();
 
@@ -131,7 +146,7 @@ app.use(errorController.get404);
 
 mongoose.connect(MONGODB_URI)
   .then((result) => {
-    app.listen(3000, () => {
+    app.listen(process.env.PORT || 3000, () => {
       // User.findOne().then(user => {
       //   if (!user) {
       //     let user = new User({

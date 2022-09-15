@@ -169,15 +169,34 @@ exports.getProducts = (req, res, next) => {
     })
 };
 
-exports.postDeleteProduct = async (req, res, next) => {
-  const prodId = req.body.productId;
-  console.log(prodId, " RRRRRRRRRr")
+// exports.postDeleteProduct = async (req, res, next) => {
+//   const prodId = req.body.productId;
+//   console.log(prodId, " RRRRRRRRRr")
 
-  let result = await Product.findByIdAndRemove(prodId);
-  console.log(result," bbbbbbbbbbbbbbbbbbbbbbbb")
-  if(result){
-    let imagePath = path.join(rootPath + result.imageUrl)
-    deleteFile(imagePath)
-    res.redirect('/admin/products');
+//   let result = await Product.findByIdAndRemove(prodId);
+//   console.log(result," bbbbbbbbbbbbbbbbbbbbbbbb")
+//   if(result){
+//     let imagePath = path.join(rootPath + result.imageUrl)
+//     deleteFile(imagePath)
+//     res.redirect('/admin/products');
+//   }
+// };
+
+exports.deleteProduct = async (req, res, next) => {
+  try {
+    const prodId = req.params.prodId
+    console.log(prodId, " RRRRRRRRRr")
+
+    let result = await Product.findByIdAndRemove(prodId);
+    console.log(result, " bbbbbbbbbbbbbbbbbbbbbbbb")
+    if (result) {
+      let imagePath = path.join(rootPath + result.imageUrl)
+      deleteFile(imagePath)
+      // res.redirect('/admin/products');
+      res.status(200).json({ message: "Success!" })
+    }
+  } catch (error) {
+    res.status(500).json({ message :" Some Error Came!"})
   }
+  
 };

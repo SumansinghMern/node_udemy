@@ -5,8 +5,9 @@
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon app.js",
-    "start-server": "node app.js"
+    "start": "MONGO_USER=sonu MONGO_PASSOWRD=t80rQQFSpbZeUg7b MONGO_DATABASE=shop STRIPE_KEY=sk_test_51LUyblSG9QvoyY4Vml8X6XOvlH6so4sFx5JaKePy5I1NxBC0t1XqZVyN396NvTV5Z5KtIVs2V2uIJABqvfM8QHns003mG3mhr7 node app.js",
+    "start-server": "node app.js",
+    "start:dev": "nodemon app.js"
   },
   "author": "Maximilian Schwarzmüller",
   "license": "ISC",
@@ -16,6 +17,7 @@
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.18.3",
+    "compression": "^1.7.4",
     "connect-flash": "^0.1.1",
     "connect-mongodb-session": "^3.1.1",
     "csurf": "^1.11.0",
@@ -24,13 +26,16 @@
     "express-handlebars": "^3.0.0",
     "express-session": "^1.17.3",
     "express-validator": "^6.14.2",
+    "helmet": "^6.0.0",
     "mongodb": "^4.7.0",
     "mongoose": "^6.4.3",
+    "morgan": "^1.10.0",
     "multer": "^1.4.5-lts.1",
     "mysql2": "^1.6.1",
     "nodemailer": "^6.7.7",
     "pdfkit": "^0.13.0",
     "pug": "^2.0.3",
-    "sequelize": "^5.0.0-beta.11"
+    "sequelize": "^5.0.0-beta.11",
+    "stripe": "^10.1.0"
   }
 }

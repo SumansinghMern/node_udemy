@@ -1,0 +1,8 @@
+{
+    "env": {
+        "MONGO_USER": "sonu",
+        "MONGO_PASSOWRD": "t80rQQFSpbZeUg7b",
+        "MONGO_DATABASE": "shop",
+        "STRIPE_KEY": "sk_test_51LUyblSG9QvoyY4Vml8X6XOvlH6so4sFx5JaKePy5I1NxBC0t1XqZVyN396NvTV5Z5KtIVs2V2uIJABqvfM8QHns003mG3mhr7"
+    }
+}
